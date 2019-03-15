@@ -3,6 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:quiver/time.dart';
 
+const double chatBarMargin = 4;
+const double chatBarRadius = 12;
+
 void main() => runApp(MaterialApp(
       home: ChatScreen(),
     ));
@@ -47,7 +50,7 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
   CurvedAnimation _elasticAnimation;
   CurvedAnimation _bounceAnimation;
 
-  bool on = false;
+  bool _showMediaButtons = false;
 
   @override
   void initState() {
@@ -66,7 +69,7 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
 
     _bounceAnimation = CurvedAnimation(
         parent: _bounceAnimationController,
-        curve: Curves.elasticOut,
+        curve: Curves.elasticInOut,
         reverseCurve: Curves.elasticInOut);
   }
 
@@ -82,12 +85,12 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.only(bottom: chatBarMargin),
       child: Transform.rotate(
-          angle: _bounceAnimation.value * (pi / (on ? -52 : 52)),
+          angle: _bounceAnimation.value * (pi / (_showMediaButtons ? -64 : 64)),
           alignment: Alignment.centerLeft,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(chatBarRadius),
             child: Stack(
               children: <Widget>[
                 _buildBarBackground(),
@@ -97,6 +100,67 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
               ],
             ),
           )),
+    );
+  }
+
+  Positioned _buildBarBackground() {
+    return Positioned.fill(
+        left: chatBarMargin,
+        right: chatBarMargin,
+        child: Transform.rotate(
+          angle: _bounceAnimation.value * (pi / (_showMediaButtons ? -52 : 52)),
+          alignment: Alignment.centerLeft,
+          child: Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(chatBarRadius),
+                color: Colors.cyan.shade600),
+          ),
+        ));
+  }
+
+  Positioned _buildMainButton() {
+    return Positioned(
+      left: chatBarMargin,
+      top: 8,
+      child: Transform.rotate(
+        angle: -pi / 4 * _elasticAnimation.value,
+        child: _buildCircleButton(ChatBarItem(Icons.add, _chooseMedia)),
+      ),
+    );
+  }
+
+  Opacity _buildMessageField() {
+    return Opacity(
+      opacity: min(max(0, 1 - _elasticAnimation.value), 1),
+      child: Padding(
+        padding: const EdgeInsets.only(
+          left: 72.0,
+          top: 10,
+          bottom: 8,
+          right: chatBarMargin * 3,
+        ),
+        child: Transform.rotate(
+          child: TextFormField(
+            enabled: !_showMediaButtons,
+            style: TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              labelText: 'Message...',
+              labelStyle: TextStyle(color: Colors.white),
+              hasFloatingPlaceholder: false,
+              border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(chatBarRadius - 2)),
+              enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(chatBarRadius - 2)),
+              filled: true,
+              fillColor: Colors.white30,
+            ),
+          ),
+          alignment: Alignment.centerLeft,
+          angle: (-pi / 2) * _elasticAnimation.value,
+        ),
+      ),
     );
   }
 
@@ -121,66 +185,6 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
         ),
       ),
     );
-  }
-
-  Opacity _buildMessageField() {
-    return Opacity(
-      opacity: min(max(0, 1 - _elasticAnimation.value), 1),
-      child: Padding(
-        padding: const EdgeInsets.only(
-          left: 78.0,
-          top: 10,
-          bottom: 8,
-          right: 20,
-        ),
-        child: Transform.rotate(
-          child: TextFormField(
-            style: TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              labelText: 'Message...',
-              labelStyle: TextStyle(color: Colors.white),
-              hasFloatingPlaceholder: false,
-              border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(10)),
-              enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(10)),
-              filled: true,
-              fillColor: Colors.white30,
-            ),
-          ),
-          alignment: Alignment.centerLeft,
-          angle: (-pi / 2) * _elasticAnimation.value,
-        ),
-      ),
-    );
-  }
-
-  Positioned _buildMainButton() {
-    return Positioned(
-      left: 12,
-      top: 8,
-      child: Transform.rotate(
-        angle: -pi / 4 * _elasticAnimation.value,
-        child: _buildCircleButton(ChatBarItem(Icons.add, _chooseMedia)),
-      ),
-    );
-  }
-
-  Positioned _buildBarBackground() {
-    return Positioned.fill(
-        left: 12,
-        right: 12,
-        child: Transform.rotate(
-          angle: _bounceAnimation.value * (pi / (on ? -52 : 52)),
-          alignment: Alignment.centerLeft,
-          child: Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.cyan.shade600),
-          ),
-        ));
   }
 
   Widget _buildCircleButton(ChatBarItem item) {
@@ -211,9 +215,8 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
           if (status == AnimationStatus.completed)
             _bounceAnimationController.reverse();
         });
-      setState(() {
-        on = !on;
-      });
+      _showMediaButtons = !_showMediaButtons;
+      _update();
     });
   }
 }
