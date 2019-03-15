@@ -56,11 +56,21 @@ class _ProgressButtonDemoState extends State<ProgressButtonDemo> {
           percentProgress: progress,
           onPressed: start,
         ),
-        Slider(
-          value: progress,
-          min: 0.0,
-          max: 100.0,
-          onChanged: (double value) => setState(() => progress = value),
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            children: <Widget>[
+              Text('Progress'),
+              Expanded(
+                child: Slider(
+                  value: progress,
+                  min: 0.0,
+                  max: 100.0,
+                  onChanged: (double value) => setState(() => progress = value),
+                ),
+              ),
+            ],
+          ),
         )
       ],
     );
