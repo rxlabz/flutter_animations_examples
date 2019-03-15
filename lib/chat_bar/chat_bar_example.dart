@@ -74,82 +74,89 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
-      child: Stack(
-        children: <Widget>[
-          Positioned.fill(
-              left: 12,
-              right: 12,
-              child: Transform.rotate(
-                angle: _bounceAnimation.value * (pi / (on ? -52 : 52)),
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.cyan.shade600),
-                ),
-              )),
-          Positioned(
-            left: 12,
-            top: 8,
-            child: Transform.rotate(
-              angle: -pi / 4 * _elasticAnimation.value,
-              child: _buildCircleButton(ChatBarItem(Icons.add, _chooseMedia)),
-            ),
-          ),
-          Opacity(
-            opacity: min(max(0, 1 - _elasticAnimation.value), 1),
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: 78.0,
-                top: 10,
-                bottom: 8,
-                right: 20,
-              ),
-              child: Transform.rotate(
-                child: TextFormField(
-                  style: TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: 'Message...',
-                    labelStyle: TextStyle(color: Colors.white),
-                    hasFloatingPlaceholder: false,
-                    border: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(10)),
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(10)),
-                    filled: true,
-                    fillColor: Colors.white30,
+      child: Transform.rotate(
+          angle: _bounceAnimation.value * (pi / (on ? -52 : 52)),
+          alignment: Alignment.centerLeft,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              children: <Widget>[
+                Positioned.fill(
+                    left: 12,
+                    right: 12,
+                    child: Transform.rotate(
+                      angle: _bounceAnimation.value * (pi / (on ? -52 : 52)),
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.cyan.shade600),
+                      ),
+                    )),
+                Positioned(
+                  left: 12,
+                  top: 8,
+                  child: Transform.rotate(
+                    angle: -pi / 4 * _elasticAnimation.value,
+                    child: _buildCircleButton(
+                        ChatBarItem(Icons.add, _chooseMedia)),
                   ),
                 ),
-                alignment: Alignment.centerLeft,
-                angle: (-pi / 2) * _elasticAnimation.value,
-              ),
-            ),
-          ),
-          Opacity(
-            opacity: min(max(0, _elasticAnimation.value), 1),
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: 78.0,
-                top: 8,
-                bottom: 8,
-                right: 20,
-              ),
-              child: Transform.rotate(
-                angle: (pi / 2) * (1 - _elasticAnimation.value),
-                child: Row(
-                  children: _chatBarItems
-                      .map((item) => _buildCircleButton(item))
-                      .toList(),
+                Opacity(
+                  opacity: min(max(0, 1 - _elasticAnimation.value), 1),
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 78.0,
+                      top: 10,
+                      bottom: 8,
+                      right: 20,
+                    ),
+                    child: Transform.rotate(
+                      child: TextFormField(
+                        style: TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Message...',
+                          labelStyle: TextStyle(color: Colors.white),
+                          hasFloatingPlaceholder: false,
+                          border: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.circular(10)),
+                          enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.circular(10)),
+                          filled: true,
+                          fillColor: Colors.white30,
+                        ),
+                      ),
+                      alignment: Alignment.centerLeft,
+                      angle: (-pi / 2) * _elasticAnimation.value,
+                    ),
+                  ),
                 ),
-                alignment: Alignment.centerLeft,
-                origin: Offset(-10, 10),
-              ),
+                Opacity(
+                  opacity: min(max(0, _elasticAnimation.value), 1),
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 78.0,
+                      top: 8,
+                      bottom: 8,
+                      right: 20,
+                    ),
+                    child: Transform.rotate(
+                      angle: (pi / 2) * (1 - _elasticAnimation.value),
+                      child: Row(
+                        children: _chatBarItems
+                            .map((item) => _buildCircleButton(item))
+                            .toList(),
+                      ),
+                      alignment: Alignment.centerLeft,
+                      origin: Offset(-10, 10),
+                    ),
+                  ),
+                )
+              ],
             ),
-          )
-        ],
-      ),
+          )),
     );
   }
 
