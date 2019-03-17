@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:quiver/time.dart';
@@ -14,12 +15,21 @@ class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade300,
+      backgroundColor: Colors.white,
       body: SafeArea(
-        child: SizedBox.expand(
-          child: Column(
-            children: <Widget>[Expanded(child: Container()), ChatBar()],
-          ),
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              child: Container(
+                margin: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            ChatBar(),
+          ],
         ),
       ),
     );
@@ -47,8 +57,8 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
 
   AnimationController _elasticAnimationController;
   AnimationController _bounceAnimationController;
-  CurvedAnimation _elasticAnimation;
-  CurvedAnimation _bounceAnimation;
+  CurvedAnimation _elasticAnimation, _bounceAnimation;
+  TextEditingController _messageController = TextEditingController();
 
   bool _showMediaButtons = false;
 
@@ -57,7 +67,7 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
     super.initState();
 
     _elasticAnimationController =
-        AnimationController(vsync: this, duration: aSecond)
+        AnimationController(vsync: this, duration: aSecond * .2)
           ..addListener(_update);
 
     _bounceAnimationController =
@@ -65,8 +75,7 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
           ..addListener(_update);
 
     _elasticAnimation = CurvedAnimation(
-        parent: _elasticAnimationController, curve: Curves.elasticInOut);
-
+        parent: _elasticAnimationController, curve: Curves.decelerate);
     _bounceAnimation = CurvedAnimation(
         parent: _bounceAnimationController,
         curve: Curves.elasticInOut,
@@ -84,22 +93,25 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final _media = MediaQuery.of(context).size.shortestSide;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: chatBarMargin),
-      child: Transform.rotate(
-          angle: _bounceAnimation.value * (pi / (_showMediaButtons ? -64 : 64)),
-          alignment: Alignment.centerLeft,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(chatBarRadius),
-            child: Stack(
-              children: <Widget>[
-                _buildBarBackground(),
-                _buildMainButton(),
-                _buildMessageField(),
-                _buildMediaButtons()
-              ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(chatBarRadius),
+        child: Stack(
+          children: <Widget>[
+            _buildBarBackground(),
+            _buildMainButton(),
+            Container(
+              child: _buildMessageField(),
+              width: _media < 375 ? 310 : 360,
             ),
-          )),
+            _buildMediaButtons(),
+            _buildSendButton(),
+          ],
+        ),
+      ),
     );
   }
 
@@ -129,6 +141,22 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
     );
   }
 
+  Positioned _buildSendButton() {
+    return Positioned(
+      right: chatBarMargin,
+      top: 8,
+      child: Transform.translate(
+        offset: Offset(100 * _elasticAnimation.value, 0),
+        child: Opacity(
+          opacity: min(max(0, 1 - _elasticAnimation.value), 1),
+          child: _buildCircleButton(
+            ChatBarItem(Icons.send, _sendMessage),
+          ),
+        ),
+      ),
+    );
+  }
+
   Opacity _buildMessageField() {
     return Opacity(
       opacity: min(max(0, 1 - _elasticAnimation.value), 1),
@@ -141,8 +169,14 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
         ),
         child: Transform.rotate(
           child: TextFormField(
+            controller: _messageController,
             enabled: !_showMediaButtons,
             style: TextStyle(color: Colors.white),
+            cursorColor: Colors.white,
+            onFieldSubmitted: (s) {
+              print(s);
+              _messageController.clear();
+            },
             decoration: InputDecoration(
               labelText: 'Message...',
               labelStyle: TextStyle(color: Colors.white),
@@ -218,5 +252,12 @@ class _ChatBarState extends State<ChatBar> with TickerProviderStateMixin {
       _showMediaButtons = !_showMediaButtons;
       _update();
     });
+  }
+
+  void _sendMessage() {
+    if (_messageController.text != null) {
+      print(_messageController.text);
+      _messageController.clear();
+    }
   }
 }
